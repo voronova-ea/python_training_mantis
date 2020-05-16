@@ -1,7 +1,5 @@
 from selenium.webdriver.support.ui import Select
 from model.project import Project
-import random
-import re
 
 
 class ProjectHelper:
@@ -16,8 +14,8 @@ class ProjectHelper:
 
     def open_projects_page(self):
         wd = self.app.wd
-        self.open_manage_page()
-        if not len(wd.find_elements_by_xpath("(//input[@value='Add Project'])")) > 0:
+        if not len(wd.find_elements_by_xpath("//input[@value='Create New Project']")) > 0:
+            self.open_manage_page()
             wd.find_element_by_link_text("Manage Projects").click()
 
     def open_project_create_page(self):
@@ -25,7 +23,7 @@ class ProjectHelper:
         if not (wd.current_url.endswith("/manage_proj_create_page.php") and
                 len(wd.find_elements_by_xpath("(//input[@value='Add Project'])")) > 0):
             self.open_projects_page()
-            wd.find_element_by_xpath("(//input[@value='Create New Project'])").click()
+            wd.find_element_by_xpath("//input[@value='Create New Project']").click()
 
     def set_field_value(self, field_name, text):
         wd = self.app.wd
@@ -49,7 +47,7 @@ class ProjectHelper:
         wd = self.app.wd
         # open create page
         self.open_project_create_page()
-        # fill fields
+        # fill form
         self.set_field_value("name", project.name)
         self.set_selected_value("status", project.status)
         self.set_checkbox_value("inherit_global", project.inherit_global)
@@ -77,3 +75,14 @@ class ProjectHelper:
             self.project_cache.append(Project(name=name, status=status, enabled=enabled, view_status=view_status,
                                               description=description))
         return list(self.project_cache)
+
+    def del_project(self, project):
+        wd = self.app.wd
+        self.open_projects_page()
+        # open deleted project
+        wd.find_element_by_link_text(project.name).click()
+        # init deletion
+        wd.find_element_by_xpath("//input[@value='Delete Project']").click()
+        # submit deletion
+        wd.find_element_by_xpath("//input[@value='Delete Project']").click()
+        self.project_cache = None
